@@ -1,0 +1,45 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Minesweeper — SiliconHuman Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#050508;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;font-family:-apple-system,sans-serif}
+h1{color:#f85149;font-size:28px}.info{color:#e1e4ed;font-size:16px}
+.board{display:grid;gap:2px;background:#1e2030;padding:6px;border-radius:12px;max-width:min(90vw,400px)}
+.cell{width:36px;height:36px;background:#161b22;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;cursor:pointer;transition:background .1s;user-select:none}
+.cell:hover{background:#1f6feb22}.cell.revealed{background:#0d1117}.cell.flagged{background:#3a1a1a}
+.cell[data-n="1"]{color:#3b82f6}.cell[data-n="2"]{color:#22c55e}.cell[data-n="3"]{color:#f85149}.cell[data-n="4"]{color:#8b5cf6}.cell[data-n="5"]{color:#f97316}.cell[data-n="6"]{color:#06b6d4}.cell[data-n="7"]{color:#e1e4ed}.cell[data-n="8"]{color:#6b7084}
+button{background:#238636;border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
+</style></head><body>
+<h1>💣 Minesweeper</h1><div class="info">🚩 <b id="flags">10</b> · ⏱ <b id="timer">0</b>s</div>
+<div class="board" id="board"></div><button onclick="newGame()">🔄 New Game</button>
+<script>
+let R=9,C=9,M=10,grid=[],revealed=[],flagged=[],gameOver=false,timer=0,tInterval;
+function newGame(){
+  R=9;C=9;M=10;grid=Array(R).fill().map(()=>Array(C).fill(0));revealed=Array(R).fill().map(()=>Array(C).fill(false));flagged=Array(R).fill().map(()=>Array(C).fill(false));
+  gameOver=false;timer=0;clearInterval(tInterval);tInterval=setInterval(()=>{if(!gameOver){timer++;document.getElementById('timer').textContent=timer}},1000);
+  let mines=0;while(mines<M){let r=Math.floor(Math.random()*R),c=Math.floor(Math.random()*C);if(!grid[r][c]){grid[r][c]=-1;mines++}}
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++)if(grid[r][c]!==-1)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){let nr=r+dr,nc=c+dc;if(nr>=0&&nr<R&&nc>=0&&nc<C&&grid[nr][nc]===-1)grid[r][c]++}
+  document.getElementById('flags').textContent=M-flagged.flat().filter(f=>f).length;
+  render()
+}
+function render(){
+  let b=document.getElementById('board');b.style.gridTemplateColumns='repeat('+C+',1fr)';b.innerHTML='';
+  for(let r=0;r<R;r++)for(let c=0;c<C;c++){
+    let cell=document.createElement('div');cell.className='cell';
+    if(revealed[r][c]){cell.classList.add('revealed');if(grid[r][c]===-1)cell.textContent='💣';else if(grid[r][c]>0){cell.textContent=grid[r][c];cell.setAttribute('data-n',grid[r][c])}}
+    else if(flagged[r][c]){cell.classList.add('flagged');cell.textContent='🚩'}
+    cell.onclick=(e)=>click(r,c,e);cell.oncontextmenu=(e)=>{e.preventDefault();flag(r,c)};
+    b.appendChild(cell)
+  }
+}
+function click(r,c,e){
+  if(gameOver||flagged[r][c]||revealed[r][c])return;
+  if(grid[r][c]===-1){gameOver=true;clearInterval(tInterval);for(let i=0;i<R;i++)for(let j=0;j<C;j++)if(grid[i][j]===-1)revealed[i][j]=true;render();return}
+  reveal(r,c);render()
+}
+function reveal(r,c){
+  if(r<0||r>=R||c<0||c>=C||revealed[r][c]||flagged[r][c])return;
+  revealed[r][c]=true;if(grid[r][c]===0)for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++)reveal(r+dr,c+dc)
+}
+function flag(r,c){if(gameOver||revealed[r][c])return;flagged[r][c]=!flagged[r][c];document.getElementById('flags').textContent=M-flagged.flat().filter(f=>f).length;render()}
+newGame();
+</script></body></html>

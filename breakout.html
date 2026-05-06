@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Breakout — SiliconHuman Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#050508;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;font-family:-apple-system,sans-serif}
+h1{color:#f97316;font-size:28px}.score{color:#e1e4ed;font-size:18px}.score b{color:#f97316}
+canvas{border:2px solid #1e2030;border-radius:12px;background:#0d1117;max-width:min(90vw,500px)}
+button{background:#238636;border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}
+</style></head><body>
+<h1>🧱 Breakout</h1><div class="score">Score: <b id="score">0</b> · Lives: <b id="lives">3</b></div>
+<canvas id="c" width="480" height="320"></canvas>
+<button onclick="reset()">🔄 New Game</button>
+<script>
+let canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
+let paddle={x:200,w:80,h:10},ball={x:240,y:200,r:6,dx:4,dy:-4};
+let bricks=[],score=0,lives=3,gameOver=false,rows=5,cols=8,colors=['#f85149','#f97316','#f59e0b','#22c55e','#3b82f6'];
+
+function initBricks(){bricks=[];for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)bricks.push({x:c*60+5,y:r*20+30,w:55,h:15,alive:true,color:colors[r]})}
+function draw(){
+  ctx.clearRect(0,0,480,320);
+  ctx.fillStyle='#e1e4ed';ctx.fillRect(paddle.x,paddle.y=290,paddle.w,paddle.h);
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r,0,Math.PI*2);ctx.fill();
+  bricks.forEach(b=>{if(b.alive){ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,b.w,b.h)}});
+  document.getElementById('score').textContent=score;document.getElementById('lives').textContent=lives;
+  if(gameOver){ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(0,0,480,320);ctx.fillStyle='#f85149';ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.fillText('Game Over',240,150);ctx.fillStyle='#e1e4ed';ctx.font='16px sans-serif';ctx.fillText('Score: '+score,240,180)}
+}
+function update(){
+  if(gameOver)return;
+  ball.x+=ball.dx;ball.y+=ball.dy;
+  if(ball.x-ball.r<0||ball.x+ball.r>480)ball.dx*=-1;
+  if(ball.y-ball.r<0)ball.dy*=-1;
+  if(ball.y+ball.r>320){lives--;if(lives<=0)gameOver=true;else{ball.x=240;ball.y=200;ball.dx=4;ball.dy=-4}}
+  if(ball.y+ball.r>paddle.y&&ball.x>paddle.x&&ball.x<paddle.x+paddle.w){ball.dy=-Math.abs(ball.dy);ball.dx+=(ball.x-paddle.x-paddle.w/2)*.1}
+  bricks.forEach(b=>{if(b.alive&&ball.x>b.x&&ball.x<b.x+b.w&&ball.y>b.y&&ball.y<b.y+b.h){b.alive=false;ball.dy*=-1;score+=10}})
+  draw()
+}
+function move(e){let rect=canvas.getBoundingClientRect();paddle.x=Math.min(400,Math.max(0,(e.clientX||(e.touches&&e.touches[0].clientX)||240)-rect.left-paddle.w/2))}
+function reset(){score=0;lives=3;gameOver=false;ball={x:240,y:200,r:6,dx:4,dy:-4};initBricks()}
+canvas.addEventListener('mousemove',move);canvas.addEventListener('touchmove',e=>{e.preventDefault();move(e)});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')paddle.x=Math.max(0,paddle.x-20);if(e.key==='ArrowRight')paddle.x=Math.min(400,paddle.x+20)});
+initBricks();setInterval(update,1000/60);
+</script></body></html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>24点 — SiliconHuman Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0f;color:#e1e4ed;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:20px;padding:20px}
+h1{color:#58a6ff;font-size:28px}
+.cards{display:flex;gap:12px}
+.card{width:80px;height:110px;background:linear-gradient(135deg,#1f6feb,#3b82f6);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+input{width:100%;max-width:300px;padding:12px;background:#11131e;border:1px solid #30363d;border-radius:8px;color:#fff;font-size:18px;text-align:center}
+button{background:#238636;border:none;color:#fff;padding:14px 28px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700}
+.status{font-size:16px;color:#8b949e;min-height:24px}.correct{color:#3fb950}.wrong{color:#f85149}
+.score{font-size:14px;color:#8b949e}
+</style></head><body>
+<h1>🎯 24点</h1>
+<div class="cards" id="cards"></div>
+<div class="status" id="status">用这四个数字算出24</div>
+<div class="score">Score: <b id="score">0</b></div>
+<input id="answer" placeholder="输入算式: (1+2)*(3+5)" onkeydown="if(event.key==='Enter')check()">
+<button onclick="check()">✓ Check</button>
+<button onclick="newGame()">🔄 New Numbers</button>
+<script>
+let nums=[],score=0;
+function newGame(){
+  nums=[rand(),rand(),rand(),rand()];
+  while(!hasSolution()){nums=[rand(),rand(),rand(),rand()]}
+  document.getElementById('cards').innerHTML=nums.map(n=>'<div class=card>'+n+'</div>').join('');
+  document.getElementById('status').textContent='用这四个数字算出24';document.getElementById('status').className='status';
+  document.getElementById('answer').value='';
+}
+function rand(){return Math.floor(Math.random()*9)+1}
+function hasSolution(){return solve(nums,24)}
+function solve(arr,target){
+  if(arr.length===1)return Math.abs(arr[0]-target)<0.001;
+  for(let i=0;i<arr.length;i++)for(let j=0;j<arr.length;j++)if(i!==j){
+    let rest=arr.filter((_,k)=>k!==i&&k!==j);
+    if(solve([arr[i]+arr[j],...rest],target))return true;
+    if(solve([arr[i]-arr[j],...rest],target))return true;
+    if(solve([arr[i]*arr[j],...rest],target))return true;
+    if(arr[j]!==0&&solve([arr[i]/arr[j],...rest],target))return true;
+  }
+  return false;
+}
+function check(){
+  let exp=document.getElementById('answer').value.replace(/\s/g,'');
+  try{
+    let val=eval(exp);
+    let used=exp.match(/\d+/g)||[];
+    let correct=Math.abs(val-24)<0.001&&used.length===4&&nums.every(n=>used.includes(String(n)));
+    if(correct){score++;document.getElementById('score').textContent=score;document.getElementById('status').textContent='✅ Correct! '+exp+' = 24';document.getElementById('status').className='correct';setTimeout(newGame,1500)}
+    else{document.getElementById('status').textContent='❌ '+exp+' = '+val;document.getElementById('status').className='wrong'}
+  }catch(e){document.getElementById('status').textContent='❌ Invalid expression';document.getElementById('status').className='wrong'}
+}
+newGame();
+</script></body></html>

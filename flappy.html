@@ -1,0 +1,41 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Flappy — SiliconHuman Games</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#050508;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:12px;font-family:-apple-system,sans-serif;touch-action:manipulation}
+h1{color:#06b6d4;font-size:28px}.score{color:#e1e4ed;font-size:20px}.score b{color:#f59e0b}
+canvas{border:2px solid #1e2030;border-radius:12px;background:linear-gradient(180deg,#1a2a3a,#0d1117);max-width:min(90vw,400px)}
+button{background:#238636;border:none;color:#fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:700}
+</style></head><body>
+<h1>🐦 Flappy</h1><div class="score">Score: <b id="score">0</b> · Best: <b id="best">0</b></div>
+<canvas id="c" width="320" height="480"></canvas>
+<button onclick="reset()" id="btn">Tap to Start</button>
+<script>
+let cv=document.getElementById('c'),ctx=cv.getContext('2d');
+let bird={x:60,y:240,r:12,vy:0},pipes=[],score=0,best=parseInt(localStorage.getItem('flappy_best')||'0'),playing=false,g=0.5,frame=0;
+function spawn(){pipes.push({x:350,top:Math.random()*200+60,gap:140,scored:false})}
+function reset(){bird={x:60,y:240,r:12,vy:0};pipes=[];score=0;playing=true;frame=0;spawn();document.getElementById('btn').textContent='Tap!'}
+function tap(){if(!playing)reset();else bird.vy=-8}
+function update(){
+  if(!playing)return;frame++;
+  bird.vy+=g;bird.y+=bird.vy;
+  if(bird.y<0||bird.y>480){die();return}
+  pipes.forEach(p=>{p.x-=2;if(!p.scored&&p.x+30<bird.x){p.scored=true;score++;if(score>best){best=score;localStorage.setItem('flappy_best',best)}}});
+  pipes=pipes.filter(p=>p.x>-40);
+  if(frame%90===0)spawn();
+  pipes.forEach(p=>{if(bird.x+bird.r>p.x&&bird.x-bird.r<p.x+30&&(bird.y-bird.r<p.top||bird.y+bird.r>p.top+p.gap))die()})
+}
+function die(){playing=false;document.getElementById('btn').textContent='Retry'}
+function draw(){
+  ctx.clearRect(0,0,320,480);
+  ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(bird.x,bird.y,bird.r,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(bird.x-3,bird.y-3,3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#000';ctx.beginPath();ctx.arc(bird.x-1,bird.y-3,1.5,0,Math.PI*2);ctx.fill();
+  pipes.forEach(p=>{ctx.fillStyle='#22c55e';ctx.fillRect(p.x,p.top-200,30,200);ctx.fillRect(p.x,p.top+p.gap,30,200);ctx.fillStyle='#1a3a1a';ctx.fillRect(p.x-2,p.top-200,4,200);ctx.fillRect(p.x-2,p.top+p.gap,4,200)})
+  ctx.fillStyle='#fff';ctx.font='bold 36px sans-serif';ctx.textAlign='center';ctx.fillText(score,160,60);
+  document.getElementById('score').textContent=score;document.getElementById('best').textContent=best;
+  if(!playing){ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(0,0,320,480);ctx.fillStyle='#fff';ctx.font='bold 24px sans-serif';ctx.fillText('Game Over',160,240)}
+}
+cv.addEventListener('click',tap);cv.addEventListener('touchstart',e=>{e.preventDefault();tap()});
+document.addEventListener('keydown',e=>{if(e.key===' ')tap()});
+setInterval(()=>{update();draw()},1000/60);
+</script></body></html>
