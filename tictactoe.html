@@ -1,0 +1,16 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="description" content="Play Tic Tac Toe online — challenge the AI. Free, no ads.">
+<title>Tic Tac Toe — SiliconHuman Games</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#050508;display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:16px;font-family:-apple-system,sans-serif;color:#e1e4ed}h1{color:#f59e0b;font-size:28px}.board{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#1e2030;padding:8px;border-radius:12px;max-width:300px;width:100%}.cell{aspect-ratio:1;background:#11131e;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;cursor:pointer;transition:background .15s}.cell:hover{background:#1a1c2c}.cell.x{color:#3b82f6}.cell.o{color:#f85149}.status{font-size:18px;color:#8b949e}button{background:#238636;border:none;color:#fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700}</style></head><body>
+<h1>❌⭕ Tic Tac Toe</h1><div class="status" id="status">Your turn (X)</div>
+<div class="board" id="board"></div><button onclick="reset()">🔄 New Game</button>
+<script>
+let b=Array(9).fill(''),turn='X',gameOver=false,ai='O',human='X';
+function render(){let g=document.getElementById('board');g.innerHTML='';b.forEach((v,i)=>{let c=document.createElement('div');c.className='cell';if(v==='X'){c.textContent='❌';c.classList.add('x')}if(v==='O'){c.textContent='⭕';c.classList.add('o')}c.onclick=()=>move(i);g.appendChild(c)})}
+function move(i){if(gameOver||b[i]!==''||turn!==human)return;b[i]=human;if(checkWin(human)){gameOver=true;document.getElementById('status').textContent='You win! 🎉';render();return}if(b.every(v=>v)){gameOver=true;document.getElementById('status').textContent='Draw!';render();return}turn=ai;document.getElementById('status').textContent='AI thinking...';render();setTimeout(aiMove,400)}
+function aiMove(){if(gameOver)return;let best=-Infinity,pos=-1;for(let i=0;i<9;i++)if(b[i]===''){b[i]=ai;let s=minimax(false);b[i]='';if(s>best){best=s;pos=i}}b[pos]=ai;if(checkWin(ai)){gameOver=true;document.getElementById('status').textContent='AI wins! 🤖';render();return}if(b.every(v=>v)){gameOver=true;document.getElementById('status').textContent='Draw!';render();return}turn=human;document.getElementById('status').textContent='Your turn (X)';render()}
+function minimax(isMax){if(checkWin(ai))return 1;if(checkWin(human))return -1;if(b.every(v=>v))return 0;if(isMax){let best=-Infinity;for(let i=0;i<9;i++)if(b[i]===''){b[i]=ai;best=Math.max(best,minimax(false));b[i]=''}return best}else{let best=Infinity;for(let i=0;i<9;i++)if(b[i]===''){b[i]=human;best=Math.min(best,minimax(true));b[i]=''}return best}}
+function checkWin(p){let w=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];return w.some(([a,d,c])=>b[a]===p&&b[d]===p&&b[c]===p)}
+function reset(){b=Array(9).fill('');turn='X';gameOver=false;document.getElementById('status').textContent='Your turn (X)';render()}
+render();
+</script></body></html>
