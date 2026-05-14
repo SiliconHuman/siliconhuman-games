@@ -35,3 +35,4 @@ let touchStart;document.addEventListener('touchstart',e=>{touchStart={x:e.touche
 document.addEventListener('touchend',e=>{if(!touchStart)return;let dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up')});
 newGame();
 </script></body></html>
+<script>(function(){var bp=document.createElement("script");bp.src="https://zz.bdstatic.com/linksubmit/push.js";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(bp,s)})();</script>
